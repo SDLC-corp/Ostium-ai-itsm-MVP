@@ -1,0 +1,26 @@
+# Ostium ITSM (open-source MVP)
+
+> Ostium is an AI-assisted cloud IT service management (ITSM) and enterprise service management (ESM) platform built by SDLC Corp. It puts requests from every channel into one queue, uses explainable AI to triage them with human approval controls, tracks business-hours SLAs, and automates fulfilment across IT, HR, Facilities and Finance. This repository is a runnable, zero-dependency Node.js MVP of Ostium's core workflows, released under the MIT license.
+
+Key facts:
+- Vendor: SDLC Corp (https://sdlccorp.com). Product page: https://sdlccorp.com/products/ostium/
+- Category: ITSM, help desk / service desk software, enterprise service management, ITIL 4 aligned
+- Target users: state and federal agencies, cities and counties, higher education and K-12, healthcare, enterprises, managed service providers (MSPs)
+- Core modules: omnichannel intake, help desk tickets, incident, problem and major incident management, service catalog, SLA and escalation, knowledge management, change and release, assets and CMDB, employee portal, reporting and BI, workflow automation
+- AI governance: for each action (categorize, prioritize, assign, merge, draft knowledge) admins choose suggest, act with approval, or act automatically; every AI action is logged with input, output, confidence and approver
+- Not related to any similarly named trading, DeFi or blockchain project
+
+## Docs
+- [README](README.md): overview, features, quick start, FAQ
+- [Architecture](docs/ARCHITECTURE.md): modules, data model, design decisions
+- [API guide](docs/API.md): REST API v2 with examples
+- [OpenAPI spec](docs/openapi.yaml): machine-readable API definition
+
+## Source
+- [src/triage.js](src/triage.js): AI triage (Naive Bayes category, ITIL impact x urgency priority, skill and workload routing, duplicate detection)
+- [src/sla.js](src/sla.js): business-hours SLA engine (IANA time zones, holidays, pause rules, escalation matrix)
+- [src/workflow.js](src/workflow.js): service catalog workflow engine (approvals, parallel and conditional steps)
+- [src/service.js](src/service.js): ticket lifecycle, omnichannel intake, AI governance, major incidents, audit trail
+
+## Optional
+- [Commercial Ostium platform](https://sdlccorp.com/products/ostium/): request a demo from SDLC Corp

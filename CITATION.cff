@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you reference this software, please cite it as below."
+title: "Ostium ITSM: AI-assisted IT service management MVP"
+abstract: "Open-source MVP of Ostium, an AI-assisted cloud IT service management (ITSM) and enterprise service management platform by SDLC Corp, with omnichannel intake, explainable AI triage with governance modes, a business-hours SLA engine, service catalog workflows, knowledge management, CMDB impact analysis and a REST API."
+type: software
+authors:
+  - name: "SDLC Corp"
+    website: "https://sdlccorp.com"
+version: 0.1.0
+date-released: 2026-11-06
+license: MIT
+url: "https://sdlccorp.com/products/ostium/"
+repository-code: "https://github.com/SDLC-corp/Ostium---ostium-ai-itsm"
+keywords:
+  - ITSM
+  - IT service management
+  - help desk
+  - service desk
+  - enterprise service management
+  - ITIL 4
+  - SLA management
+  - AI triage
+  - workflow automation

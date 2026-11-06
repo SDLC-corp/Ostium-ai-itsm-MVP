@@ -1,0 +1,283 @@
+openapi: 3.1.0
+info:
+  title: Ostium ITSM API
+  version: 2.0.0
+  summary: REST API for the Ostium AI-assisted IT service management (ITSM) MVP by SDLC Corp.
+  description: |
+    Tickets, omnichannel intake, AI triage with governance, SLA state, major incidents,
+    service catalog workflows, knowledge, CMDB impact, metrics and audit.
+  contact:
+    name: SDLC Corp
+    url: https://sdlccorp.com/products/ostium/
+  license:
+    name: MIT
+servers:
+  - url: http://localhost:3000/api/v2
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Required for non-GET requests when the server sets OSTIUM_API_KEY.
+  parameters:
+    id:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, example: INC-1072 }
+  schemas:
+    Error:
+      type: object
+      properties: { error: { type: string } }
+    Requester:
+      type: object
+      properties:
+        name: { type: string }
+        email: { type: string }
+        department: { type: string }
+    TicketInput:
+      type: object
+      required: [title]
+      properties:
+        title: { type: string }
+        description: { type: string }
+        type: { type: string, enum: [incident, request] }
+        channel: { type: string, enum: [email, teams, portal, mobile, sms, chat, virtual-agent] }
+        requester: { $ref: '#/components/schemas/Requester' }
+        category: { type: string, description: Overrides AI category }
+        priority: { type: string, enum: [P1, P2, P3, P4], description: Overrides AI priority }
+        assignmentGroup: { type: string }
+        ciIds: { type: array, items: { type: string } }
+    AiSuggestion:
+      type: object
+      properties:
+        value: { type: string }
+        confidence: { type: number, minimum: 0, maximum: 1 }
+        reason: { type: string }
+        mode: { type: string, enum: [suggest, approve, auto] }
+        decision: { type: string, enum: [suggested, pending, auto_applied, accepted, rejected] }
+    Sla:
+      type: object
+      properties:
+        policyId: { type: string }
+        state: { type: string, enum: [on_track, at_risk, breached, paused, met] }
+        percentUsed: { type: integer }
+        response: { type: object }
+        resolution: { type: object }
+        escalation:
+          type: object
+          properties:
+            level: { type: integer }
+            notify: { type: string, nullable: true }
+    Ticket:
+      allOf:
+        - $ref: '#/components/schemas/TicketInput'
+        - type: object
+          properties:
+            id: { type: string }
+            status: { type: string, enum: [new, open, in_progress, pending, resolved, closed] }
+            department: { type: string }
+            assignee: { type: string, nullable: true }
+            assigneeName: { type: string, nullable: true }
+            createdAt: { type: string, format: date-time }
+            firstResponseAt: { type: string, format: date-time, nullable: true }
+            resolvedAt: { type: string, format: date-time, nullable: true }
+            majorIncident: { type: boolean }
+            parentId: { type: string, nullable: true }
+            ai:
+              type: object
+              additionalProperties: { $ref: '#/components/schemas/AiSuggestion' }
+            sla: { $ref: '#/components/schemas/Sla' }
+security:
+  - {}
+  - apiKey: []
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses: { '200': { description: OK } }
+  /tickets:
+    get:
+      summary: List tickets sorted by SLA risk
+      parameters:
+        - { name: open, in: query, schema: { type: string, enum: ['true'] } }
+        - { name: status, in: query, schema: { type: string } }
+        - { name: priority, in: query, schema: { type: string }, example: 'P1,P2' }
+        - { name: department, in: query, schema: { type: string } }
+        - { name: channel, in: query, schema: { type: string } }
+        - { name: q, in: query, schema: { type: string } }
+        - { name: sort, in: query, schema: { type: string, enum: [sla, created] } }
+      responses:
+        '200':
+          description: Tickets
+          content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Ticket' } } } }
+    post:
+      summary: Create a ticket (AI triage runs automatically)
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/TicketInput' } } } }
+      responses:
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/Ticket' } } } }
+        '400': { description: Invalid, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /incidents:
+    post:
+      summary: Create an incident
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/TicketInput' } } } }
+      responses: { '201': { description: Created } }
+  /requests:
+    post:
+      summary: Create a service request
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/TicketInput' } } } }
+      responses: { '201': { description: Created } }
+  /tickets/{id}:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    get:
+      summary: Get a ticket with live SLA state
+      responses: { '200': { description: Ticket }, '404': { description: Not found } }
+    patch:
+      summary: Update status, priority, assignee, category or CSAT
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status: { type: string }
+                pauseReason: { type: string }
+                priority: { type: string }
+                assignee: { type: string, nullable: true }
+                category: { type: string }
+                csat: { type: integer, minimum: 1, maximum: 5 }
+      responses: { '200': { description: Updated } }
+  /tickets/{id}/comments:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    post:
+      summary: Add an agent reply, internal note or requester reply
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [body]
+              properties:
+                body: { type: string }
+                role: { type: string, enum: [agent, requester] }
+                public: { type: boolean }
+                author: { type: string }
+      responses: { '200': { description: Updated ticket } }
+  /tickets/{id}/ai/{field}/{decision}:
+    parameters:
+      - { $ref: '#/components/parameters/id' }
+      - { name: field, in: path, required: true, schema: { type: string, enum: [category, priority, assignment, merge] } }
+      - { name: decision, in: path, required: true, schema: { type: string, enum: [accept, reject] } }
+    post:
+      summary: Accept or reject an AI suggestion (audited)
+      requestBody: { content: { application/json: { schema: { type: object, properties: { value: { type: string } } } } } }
+      responses: { '200': { description: Updated ticket }, '409': { description: Already decided } }
+  /tickets/{id}/merge:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    post:
+      summary: Merge into another ticket, or link to a major incident
+      requestBody: { content: { application/json: { schema: { type: object, properties: { targetId: { type: string } } } } } }
+      responses: { '200': { description: OK } }
+  /tickets/{id}/major-incident:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    post:
+      summary: Declare a major incident and publish a status banner
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                childIds: { type: array, items: { type: string } }
+                banner: { type: string }
+      responses: { '200': { description: OK } }
+  /tickets/{id}/workflow/{step}:
+    parameters:
+      - { $ref: '#/components/parameters/id' }
+      - { name: step, in: path, required: true, schema: { type: string } }
+    post:
+      summary: Approve, reject or complete a workflow step
+      requestBody: { content: { application/json: { schema: { type: object, properties: { decision: { type: string, enum: [approve, reject, done] } } } } } }
+      responses: { '200': { description: OK }, '409': { description: Step not active } }
+  /tickets/{id}/kb-draft:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    post:
+      summary: Draft a knowledge article from a resolved ticket
+      responses: { '201': { description: Draft created } }
+  /triage:
+    post:
+      summary: Preview AI triage without creating a ticket
+      requestBody: { content: { application/json: { schema: { $ref: '#/components/schemas/TicketInput' } } } }
+      responses: { '200': { description: Prediction } }
+  /intake/{channel}:
+    parameters:
+      - { name: channel, in: path, required: true, schema: { type: string, enum: [email, teams, sms, chat, virtual-agent, mobile, portal] } }
+    post:
+      summary: Omnichannel intake webhook
+      requestBody: { content: { application/json: { schema: { type: object } } } }
+      responses: { '201': { description: Ticket created } }
+  /kb:
+    get:
+      summary: List or search knowledge articles
+      parameters: [{ name: q, in: query, schema: { type: string } }]
+      responses: { '200': { description: Articles } }
+  /kb/{id}:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    get: { summary: Get article, responses: { '200': { description: Article } } }
+  /kb/{id}/publish:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    post: { summary: Approve and publish a draft, responses: { '200': { description: Published } } }
+  /catalog:
+    get: { summary: Service catalog items, responses: { '200': { description: Items } } }
+  /catalog/{id}/request:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    post:
+      summary: Submit a catalog request and start its workflow
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                values: { type: object }
+                requester: { $ref: '#/components/schemas/Requester' }
+      responses: { '201': { description: Request created } }
+  /assets:
+    get: { summary: CMDB items, responses: { '200': { description: Assets } } }
+  /assets/{id}/impact:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    get: { summary: Impact analysis for a CI, responses: { '200': { description: Impact } } }
+  /metrics:
+    get:
+      summary: Dashboard metrics (SLA compliance, MTTR, FCR, CSAT, aging, trend, chargeback)
+      parameters: [{ name: department, in: query, schema: { type: string } }]
+      responses: { '200': { description: Metrics } }
+  /audit:
+    get:
+      summary: Audit trail, newest first
+      parameters: [{ name: limit, in: query, schema: { type: integer } }]
+      responses: { '200': { description: Entries } }
+  /banners:
+    get: { summary: Active service alert banners, responses: { '200': { description: Banners } } }
+  /technicians:
+    get: { summary: Technicians and skills, responses: { '200': { description: Technicians } } }
+  /settings:
+    get: { summary: SLA policies, calendars and AI governance, responses: { '200': { description: Settings } } }
+  /settings/ai-governance:
+    patch:
+      summary: Set AI mode per action
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: { type: string, enum: [suggest, approve, auto] }
+              example: { priority: auto }
+      responses: { '200': { description: Updated policy } }
+  /export/tickets.csv:
+    get:
+      summary: CSV export of all tickets
+      responses: { '200': { description: CSV, content: { text/csv: {} } } }
+  /admin/reset:
+    post: { summary: Reseed demo data, responses: { '200': { description: OK } } }

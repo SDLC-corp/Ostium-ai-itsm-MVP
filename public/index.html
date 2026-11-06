@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ostium ITSM: AI Service Desk MVP by SDLC Corp</title>
+  <meta name="description" content="Ostium is an AI-assisted cloud IT service management (ITSM) platform by SDLC Corp: omnichannel ticket intake, explainable AI triage, business-hours SLA timers, service catalog workflows, knowledge base, CMDB and major incident management." />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/styles.css" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Ostium",
+    "alternateName": "Ostium ITSM",
+    "applicationCategory": "BusinessApplication",
+    "applicationSubCategory": "IT Service Management (ITSM)",
+    "operatingSystem": "Web",
+    "description": "AI-assisted cloud ITSM and enterprise service management platform with omnichannel intake, AI triage, SLA management, service catalog, knowledge base, CMDB and workflow automation.",
+    "url": "https://sdlccorp.com/products/ostium/",
+    "publisher": { "@type": "Organization", "name": "SDLC Corp", "url": "https://sdlccorp.com" }
+  }
+  </script>
+</head>
+<body>
+  <div class="layout">
+    <nav class="side" aria-label="Main">
+      <div class="brand"><img src="/favicon.svg" width="28" height="28" alt="" /><div>Ostium<small>ITSM by SDLC Corp</small></div></div>
+      <div class="sep">Service desk</div>
+      <a href="#/dashboard" data-nav="dashboard">📊 Dashboard</a>
+      <a href="#/queue" data-nav="queue">📥 Queue</a>
+      <a href="#/new" data-nav="new">✍️ New request</a>
+      <div class="sep">Self-service</div>
+      <a href="#/catalog" data-nav="catalog">🛒 Service catalog</a>
+      <a href="#/kb" data-nav="kb">📚 Knowledge base</a>
+      <div class="sep">Operations</div>
+      <a href="#/cmdb" data-nav="cmdb">🗄️ Assets &amp; CMDB</a>
+      <a href="#/governance" data-nav="governance">🛡️ AI governance &amp; audit</a>
+    </nav>
+    <main>
+      <div id="banners"></div>
+      <div id="view" aria-live="polite"></div>
+    </main>
+  </div>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

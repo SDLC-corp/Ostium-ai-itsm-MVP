@@ -1,0 +1,54 @@
+{
+  "name": "ostium-itsm",
+  "version": "0.1.0",
+  "description": "Ostium ITSM MVP by SDLC Corp. An open-source, AI-assisted IT service management (ITSM) and enterprise service management (ESM) help desk with an omnichannel ticket queue, explainable AI triage, business-hours SLA timers, service catalog workflows, a knowledge base, CMDB impact analysis, major incident management and a REST API.",
+  "type": "module",
+  "main": "server.js",
+  "bin": {
+    "ostium": "server.js"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18.17"
+  },
+  "keywords": [
+    "itsm",
+    "it-service-management",
+    "help-desk",
+    "service-desk",
+    "ticketing-system",
+    "enterprise-service-management",
+    "esm",
+    "itil",
+    "itil4",
+    "sla",
+    "sla-management",
+    "incident-management",
+    "problem-management",
+    "change-management",
+    "service-catalog",
+    "knowledge-base",
+    "cmdb",
+    "ai-triage",
+    "workflow-automation",
+    "servicenow-alternative",
+    "government",
+    "public-sector",
+    "sdlc-corp",
+    "ostium"
+  ],
+  "author": "SDLC Corp (https://sdlccorp.com)",
+  "homepage": "https://sdlccorp.com/products/ostium/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SDLC-corp/Ostium---ostium-ai-itsm.git"
+  },
+  "bugs": {
+    "url": "https://github.com/SDLC-corp/Ostium---ostium-ai-itsm/issues"
+  },
+  "license": "MIT"
+}
